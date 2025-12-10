@@ -1,0 +1,158 @@
+body{
+background-color: #C4E7D4;
+font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+}
+
+
+h1{
+   color: #173339;
+   text-align: center;
+   font-weight: bold;
+   margin: 0;
+   padding-top: 30px;
+   font-family: 'Times New Roman', Times, serif;
+  
+}
+
+
+h2{
+   color:#104547;
+   text-align:left;
+   font-family: 'Times New Roman', Times, serif;
+   font-style: italic;
+
+
+}
+
+
+h3{
+   color:#104547;
+   text-align: left;
+   font-family: 'Times New Roman', Times, serif;
+   text-decoration: underline;
+
+
+}
+
+
+h4{
+   color: #173339;
+   text-align: left;
+   font-family: 'Times New Roman', Times, serif;
+   font-style: italic;
+
+}
+h5{
+   color:#C4E7D4;
+   text-align: center;
+   margin: 0;
+   font-family: 'Times New Roman', Times, serif;
+}
+
+hr{
+   background-color: #C4E7D4;
+   font-weight: bold;
+   height: 3px;
+   margin-top: 20px;
+   margin-bottom: 20px;
+   border:none;
+
+}
+
+
+.common{
+   background-color: #4B8074;
+   position: absolute;
+}
+
+
+
+
+.header{
+ 
+   top: 5px;
+   left: 15px;
+   right: 15px;
+   height: 100px;
+
+
+}
+
+
+
+.tableauPlaceholder {
+    margin: 0;        
+    padding: 0;
+    margin-top: 20px;  
+    line-height: 0;   
+    overflow: hidden; 
+}
+
+
+.tableauPlaceholder iframe {
+    display: block;   
+    margin: 0;
+    padding: 0;
+    border: none;    
+}
+
+.leftmenu{
+   top:115px;
+  left:15px;
+  width:100px;
+  bottom:40px;
+  padding: 10px;
+  font-family: 'Times New Roman', Times, serif;
+  min-height: 2700px;
+
+
+
+
+
+
+
+
+}
+
+
+.main{
+   top:115px;
+   left: 145px;
+   right: 15px;
+   bottom: 40px;
+   padding: 10px;
+   position: absolute;
+   min-height: 2700px;
+   background-color: #60AB9A;
+   h3{
+       margin-top: 0;
+   }
+
+
+  }
+
+  a{
+   color: #C4E7D4;
+   font-style: italic;
+   text-decoration: solid;
+
+  }
+
+  .intructions{
+   line-height: 1.6;
+   margin-bottom:20px;
+  }
+
+  a.top-link{
+   color: #173339;
+   text-align: center;
+   font-family: 'Times New Roman', Times, serif;
+   font-style: italic;
+   font-weight: bold;
+   text-decoration: none;
+
+
+  }
+ 
+
+

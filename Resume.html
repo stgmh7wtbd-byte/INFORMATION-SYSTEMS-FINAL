@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Professional Resume - Ashlynne Hawkins</title>
+  
+   <style>
+       /* Base Body Style: Sans-serif for readability in long text */
+       body {
+           font-family: 'Helvetica Neue', Arial, sans-serif;
+           background-color: #f8f9fa;
+           color: #212529;
+           line-height: 1.6;
+           margin: 0;
+           padding: 20px;
+       }
+
+
+       /* Heading Styles: Times New Roman for a classic, professional look */
+       h1, h2, h3, h4 {
+           font-family: 'Times New Roman', Times, serif;
+           font-weight: bold;
+       }
+      
+       .resume-container {
+           max-width: 850px;
+           margin: 0 auto;
+           background-color: #ffffff;
+           padding: 40px;
+           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+           border-radius: 8px;
+           padding-top: 0;
+       }
+
+
+       /* BANNER STYLING */
+       .headshot-banner {
+           width: 100%;
+           border-radius: 8px 8px 0 0;
+           margin-bottom: 20px;
+           display: block;
+       }
+
+
+       /* Header Layout for Text (Now below the image) */
+       .header-text {
+           text-align: center;
+           padding: 0 0 20px 0;
+           border-bottom: 3px solid #1F3A5E; /* NAVY BLUE ACCENT */
+           margin-bottom: 30px;
+       }
+
+
+       .header h1 {
+           font-size: 2.5em;
+           margin-bottom: 5px;
+           color: #1F3A5E; /* NAVY BLUE ACCENT */
+       }
+      
+       .header p {
+           font-size: 1.1em;
+           color: #6c757d;
+           margin-top: 5px;
+       }
+       /* End of Image and Header Layout Styles */
+
+
+       .section {
+           margin-bottom: 30px;
+       }
+
+
+       .section h2 {
+           font-size: 1.6em;
+           color: #343a40;
+           border-bottom: 2px solid #e9ecef;
+           padding-bottom: 5px;
+           margin-bottom: 15px;
+       }
+
+
+       /* Styling for Work Experience and Education Blocks */
+       .entry {
+           margin-bottom: 25px;
+           padding: 5px 0 0 15px; /* Added left padding for the border */
+           border-left: 4px solid #1F3A5E; /* REINTRODUCED LEFT DIVIDER */
+           border-bottom: none;
+           background-color: #ffffff;
+           display: flex;
+           justify-content: space-between;
+       }
+      
+       /* Ensure the last entry in a section doesn't have extra bottom padding */
+       .section .entry:last-child {
+           margin-bottom: 0;
+           padding-bottom: 0;
+       }
+
+
+       .entry-details {
+           flex-grow: 1;
+       }
+
+
+       .entry-date {
+           min-width: 150px;
+           text-align: right;
+           font-style: italic;
+           color: #6c757d;
+           font-family: 'Helvetica Neue', Arial, sans-serif;
+       }
+
+
+       .entry h3 {
+           font-size: 1.25em;
+           margin: 0;
+           color: #212529;
+       }
+
+
+       .entry p {
+           margin: 3px 0 0 0;
+           color: #495057;
+       }
+      
+       /* Italicizing text for addresses/locations */
+       .entry p em {
+           font-style: italic;
+       }
+      
+       .bullet-list {
+           margin-top: 5px;
+           padding-left: 20px;
+           list-style-type: disc;
+       }
+      
+       .bullet-list li {
+           margin-bottom: 5px;
+       }
+
+
+       /* Styling for Skills - Keeps the rectangular background */
+       .skills-group {
+           display: flex;
+           flex-wrap: wrap;
+           gap: 20px;
+       }
+
+
+       .skill-category {
+           flex: 1 1 30%;
+           min-width: 250px;
+           padding: 15px;
+           background-color: #f1f3f5;
+           border-radius: 4px;
+           border: 1px solid #e9ecef;
+       }
+      
+       /* FIX FOR SKILLS SPACING: Reduced bottom margin on h4 */
+       .skill-category h4 {
+           font-size: 1.25em;
+           color: #1F3A5E;
+           margin-top: 0;
+           margin-bottom: 8px;
+           font-family: 'Times New Roman', Times, serif;
+           font-weight: bold;
+       }
+      
+       /* NAVY BOLDING FOR SKILL SUB-POINTS */
+       .skill-category li strong {
+           color: #1F3A5E; /* Applies navy color */
+           font-weight: bold;
+       }
+
+
+       /* Styling for Awards (Clean white box with navy divider) */
+       .award-box {
+           border-left: 4px solid #1F3A5E;
+           padding: 15px;
+           background-color: #ffffff;
+           border-radius: 4px;
+       }
+      
+       .award-box h3 {
+           color: #212529;
+           margin-top: 0;
+       }
+      
+       /* Contact Footer Styling (UPDATED FONT AND BOLDING REMOVED) */
+       .footer-contact {
+           text-align: center;
+           padding: 20px 0;
+           background-color: #1F3A5E;
+           color: #ffffff;
+           border-radius: 0 0 8px 8px;
+           margin: 40px -40px -40px -40px;
+           font-size: 1.1em;
+           line-height: 1.4;
+           font-family: 'Times New Roman', Times, serif; /* SETS FONT */
+       }
+       .footer-contact h4 {
+           color: #ffffff;
+           margin-bottom: 5px;
+           margin-top: 0;
+           font-weight: normal; /* Removes bolding from h4 (optional, but consistent) */
+       }
+       .footer-contact p {
+           color: #ffffff;
+           margin-top: 0;
+           font-weight: normal; /* Ensures paragraph text is not bolded */
+       }
+       .footer-contact a {
+           color: #f8f9fa;
+           text-decoration: none;
+           font-weight: normal; /* Removes bolding from links */
+           padding: 0 10px;
+       }
+       .footer-contact a:hover {
+           text-decoration: underline;
+       }
+
+
+       /* Media query for smaller screens to stack elements */
+       @media (max-width: 768px) {
+           .skills-group {
+               flex-direction: column;
+           }
+           .skill-category {
+               min-width: 100%;
+           }
+       }
+   </style>
+</head>
+<body>
+
+
+   <div class="resume-container">
+      
+       <img class="headshot-banner" src="ashlynne_headshot.jpg" alt="Professional Headshot of Ashlynne Hawkins">
+
+
+       <header class="header-text">
+           <h1><strong>Ashlynne Hawkins</strong></h1>
+           <p>High-achieving, tech-fluent professional accelerating into the business field. Graduated high school with an Associate of Arts degree and combines exceptional digital proficiency—Expert Microsoft Office and AI-Savvy—with proven self-discipline, complex problem-solving, and empathetic interpersonal skills.</p>
+       </header>
+
+
+       <div class="section">
+           <h2>Education</h2>
+          
+           <div class="entry">
+               <div class="entry-details">
+                   <h3><strong>Information Systems Coursework (Pre-Business Program)</strong></h3>
+                   <p>Brigham Young University (BYU) | <em>Marriott School of Business</em></p>
+                   <ul class="bullet-list">
+                       <li>Currently studying core principles of Information Systems (IS) and business fundamentals.</li>
+                       <li>Building foundation for leveraging technology in organizational and strategic contexts.</li>
+                   </ul>
+               </div>
+               <div class="entry-date">
+                   <p>In Progress</p>
+               </div>
+           </div>
+
+
+           <div class="entry">
+               <div class="entry-details">
+                   <h3><strong>Associate of Arts (A.A.) Degree</strong></h3>
+                   <p>Rio Salado College | <em>Mesa, Arizona</em></p>
+                   <ul class="bullet-list">
+                       <li>Graduated with High Honor Distinction</li>
+                   </ul>
+               </div>
+               <div class="entry-date">
+                   <p>Completed</p>
+               </div>
+           </div>
+
+
+           <div class="entry">
+               <div class="entry-details">
+                   <h3>High School Graduation</h3>
+                   <p>Awarded English Distinction</p>
+               </div>
+               <div class="entry-date">
+                   <p>Completed</p>
+               </div>
+           </div>
+       </div>
+      
+       <div class="section">
+           <h2>Work Experience</h2>
+          
+           <div class="entry">
+               <div class="entry-details">
+                   <h3><strong>Student Custodian</strong> at the MTC</h3>
+                   <p>BYU | <em>2005 North 900 East, Provo, Utah</em></p>
+                   <ul class="bullet-list">
+                       <li>Proactively direct and coordinate maintenance and cleanliness operations alongside a team of custodians and missionaries.</li>
+                       <li>Demonstrate exceptional self-discipline and adherence to a demanding, early-morning schedule to ensure building readiness.</li>
+                       <li>Consistently show strong initiative by identifying and executing necessary tasks without supervision, and frequently step in to delegate responsibilities.</li>
+                   </ul>
+               </div>
+               <div class="entry-date">
+                   <p>09/2025 – Present</p>
+               </div>
+           </div>
+
+
+           <div class="entry">
+               <div class="entry-details">
+                   <h3><strong>Respite Care Provider</strong></h3>
+                   <p>All Aboard Services | <em>1892 S Arroyo Ln, Gilbert, AZ 85295</em></p>
+                   <ul class="bullet-list">
+                       <li>Provided specialized, in-home respite care to multiple families supporting children with severe disabilities, alleviating parental burden and providing critical relief time.</li>
+                       <li>Required exceptional flexibility and proactive adaptation to highly dynamic schedules, including household management and specialized transportation.</li>
+                       <li>Consistently anticipated and identified family needs before being asked, ensuring comprehensive and effective support.</li>
+                   </ul>
+               </div>
+               <div class="entry-date">
+                   <p>01/2025 – 09/2025</p>
+               </div>
+           </div>
+       </div>
+
+
+       <div class="section">
+           <h2>Skills</h2>
+           <div class="skills-group">
+              
+               <div class="skill-category">
+                   <h4>Technical & Digital Proficiency</h4>
+                   <ul class="bullet-list">
+                       <li><strong>Data Analysis & Visualization</strong>: SQL, Tableau</li>
+                       <li><strong>Web Development Fundamentals</strong>: HTML, CSS</li>
+                       <li><strong>Software Certification</strong>: Microsoft Office Expert Level (Word and Excel)</li>
+                       <li><strong>Emerging Technology</strong>: AI-Savvy — foundational understanding of leveraging AI tools</li>
+                   </ul>
+               </div>
+
+
+               <div class="skill-category">
+                   <h4>Professional & Interpersonal Skills</h4>
+                   <ul class="bullet-list">
+                       <li><strong>Problem-Solving</strong>: Proactively identify issues and independently develop/implement solutions.</li>
+                       <li><strong>Communication & Collaboration</strong>: Consistent, clear, and professional interaction with teams and clients.</li>
+                       <li><strong>Adaptability & Flexibility</strong>: Highly resourceful and capable of quickly adjusting strategies and priorities.</li>
+                       <li><strong>Task Management</strong>: Expert in prioritization and efficient time management.</li>
+                       <li><strong>Learning Agility</strong>: Rapid integration and application of new information.</li>
+                   </ul>
+               </div>
+
+
+               <div class="skill-category">
+                   <h4>Certifications & Compliance</h4>
+                   <ul class="bullet-list">
+                       <li><strong>CPR Certified</strong>: Current certification in Cardiopulmonary Resuscitation.</li>
+                       <li><strong>Fingerprint Clearance Card</strong>: Hold a current, active Fingerprint Clearance Card, confirming eligibility for positions requiring high security and work with vulnerable populations.</li>
+                   </ul>
+               </div>
+           </div>
+       </div>
+      
+       <div class="section">
+           <h2>Awards & Honors</h2>
+           <div class="award-box">
+               <h3><strong>Arizona State High School Winner</strong> for the Digital Citizenship Canva Design Challenge</h3>
+               <ul class="bullet-list">
+                   <li>Recognized for developing a high-impact visual campaign (using Canva) that effectively promoted principles of digital citizenship and online ethics.</li>
+                   <li>Showcases proficiency in visual communication, design software, and digital strategy.</li>
+               </ul>
+           </div>
+       </div>
+
+
+       <footer class="footer-contact">
+           <h4>Contact Information</h4>
+           <p>
+               Phone: <a href="tel:4806887769">480-688-7769</a>
+               |
+               Email: <a href="mailto:ashlynne@hawkinsfam.org">ashlynne@hawkinsfam.org</a>
+           </p>
+       </footer>
+
+
+   </div>
+
+
+</body>
+</html>

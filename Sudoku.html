@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Sudoku Puzzle Game</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <style>
+       /* Custom styles for a Sudoku grid (Black/White Scheme) */
+       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto+Mono:wght@700&display=swap');
+      
+       /* --- CUSTOM COLOR PALETTE DEFINITIONS --- */
+       :root {
+           --color-vintage-berry: #753954;     /* Dark Plum/Maroon - Solve Button & Restart Button */
+           --color-berry-crush: #AE4A68;       /* Medium Rose/Maroon - New Game Button & Clear Button */
+           --color-pine-blue: #297373;         /* Dark Teal - Status Message Text & MODE:NOTES BG */
+           --color-light-cerulean: #dbe7e7;    /* Light Cyan/Blue - 1-9 Buttons & MODE:FINAL BG */
+           --color-main-bg: #F7F4F0;           /* Very Light Beige - Main Card/Panel BG (Status Message BG) */
+
+
+           /* New Highlight Colors based on Palette */
+           --color-highlight-selected: #E0B0B7; /* Light Rose for Selected Cell (Better Contrast) */
+           --color-highlight-same: #753954;     /* Vintage Berry */
+           --color-highlight-area: #fce7f3;     /* Light Pink (Row/Col/Box) */
+       }
+
+
+       body {
+           font-family: 'Inter', sans-serif;
+           background-color: #f3f4f6; /* Light gray body background */
+       }
+      
+       /* Sudoku Grid Container */
+       #sudoku-grid {
+           display: grid;
+           grid-template-columns: repeat(9, 1fr);
+           grid-template-rows: repeat(9, 1fr);
+           border: 4px solid black; /* THICKEST: Outer border */
+           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+           aspect-ratio: 1 / 1;
+           max-width: 500px;
+           /* EDITED: Increased width slightly for larger screens, combined with max-height to ensure shrinking */
+           width: 95vw;
+           max-height: 100%; /* NEW: Allows the grid to shrink vertically when space is limited */
+           margin: 0 auto; /* Removed vertical margin */
+       }
+
+
+       /* Individual cells - Default styles */
+       .cell {
+           border: 1px solid #dddddd; /* LIGHTEST: Internal cell lines */
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           font-size: clamp(1.2rem, 4vw, 2.5rem);
+           font-family: 'Roboto Mono', monospace;
+           transition: background-color 0.15s;
+           cursor: pointer;
+           user-select: none;
+           position: relative;
+           background-color: white; /* Default background */
+       }
+
+
+       /* --- BORDER HIERARCHY FIX (Ensuring 4px outer border is visible) --- */
+      
+       /* Vertical Block Lines (right border of 3rd and 6th column - MIDDLE THICKNESS) */
+       .cell:nth-child(9n + 3),
+       .cell:nth-child(9n + 6)
+       {
+            border-right-width: 2px;
+            border-right-color: black;
+       }
+      
+       /* Horizontal Block Lines (bottom border of cells in the 3rd and 6th rows - MIDDLE THICKNESS) */
+       /* Targets cells in rows 3 and 6 */
+       .cell:nth-child(n+19):nth-child(-n+27), /* Row 3 (cells 19-27) */
+       .cell:nth-child(n+46):nth-child(-n+54)  /* Row 6 (cells 46-54) */
+       {
+           border-bottom-width: 2px;
+           border-bottom-color: black;
+       }
+      
+       /* NEW RULES: Remove cell's internal borders on the outer edges to reveal the 4px container border */
+      
+       /* Right Column: Clear cell's right border */
+       .cell:nth-child(9n) { border-right: none; }
+      
+       /* Left Column: Clear cell's left border */
+       .cell:nth-child(9n + 1) { border-left: none; }
+      
+       /* Top Row: Clear cell's top border */
+       .cell:nth-child(n+1):nth-child(-n+9) { border-top: none; }
+      
+       /* Bottom Row: Clear cell's bottom border */
+       .cell:nth-child(n+73):nth-child(-n+81) { border-bottom: none; }
+
+
+       /* Styles for number types (B&W) */
+       .initial {
+           color: black;
+           font-weight: 700;
+           background-color: #f0f0f0;
+       }
+       .user-input {
+           color: #1f2937;
+           font-weight: 700;
+       }
+
+
+       /* --- Highlighting Styles (PALETTE Integration) --- */
+       .selected {
+           background-color: var(--color-highlight-selected) !important; /* Light Rose */
+           color: black !important; /* Ensure visibility against lighter selection */
+       }
+       .highlighted {
+           background-color: var(--color-highlight-area); /* Light Pink */
+       }
+       .same-number-highlight {
+           background-color: var(--color-highlight-same); /* Vintage Berry */
+           color: white !important; /* Ensure visibility against darker selection */
+       }
+       /* Specific override for user input/initial numbers on selected/same-number cells */
+       .selected.user-input, .selected.initial {
+           color: black !important;
+       }
+       .same-number-highlight.user-input, .same-number-highlight.initial {
+           color: white !important;
+       }
+
+
+       /* --- Validation Colors (ONLY applied on Solve button press) --- */
+       .error {
+           color: #ef4444;
+           font-weight: 700;
+           background-color: #fecaca;
+       }
+       .success {
+           background-color: #34d399 !important;
+           color: #065f46;
+           font-weight: 700;
+       }
+      
+       /* --- Notes Feature Styling (Unchanged) --- */
+       .notes-grid {
+           display: grid;
+           grid-template-columns: repeat(3, 1fr);
+           grid-template-rows: repeat(3, 1fr);
+           width: 100%;
+           height: 100%;
+           padding: 5%;
+       }
+       .note {
+           font-size: clamp(0.5rem, 1.5vw, 0.9rem);
+           font-weight: 400;
+           color: #52525b;
+           line-height: 1;
+           text-align: center;
+       }
+       .cell.notes-mode {
+           font-size: 1px;
+           display: block;
+       }
+
+
+       /* --- Custom Button Styles (Palette Integration) --- */
+      
+       /* Main Buttons (New Game / Solve) */
+       #new-game-button {
+           background-color: var(--color-berry-crush);
+       }
+       #new-game-button:hover {
+           background-color: #9b405c;
+       }
+       #solve-button {
+           background-color: var(--color-vintage-berry);
+       }
+       #solve-button:hover {
+           background-color: #643248;
+       }
+
+
+       /* Number Input Buttons (1-9) */
+       #number-buttons button {
+           background-color: var(--color-light-cerulean);
+           color: var(--color-pine-blue); /* Pine Blue text */
+           font-weight: 600;
+       }
+       #number-buttons button:hover {
+           background-color: #c9c5e3;
+       }
+
+
+       /* Mode Toggle Button */
+       .btn-mode-final {
+           background-color: var(--color-light-cerulean);
+           color: var(--color-pine-blue);
+       }
+       .btn-mode-final:hover {
+           background-color: #c9c5e3;
+       }
+       .btn-mode-notes {
+           background-color: var(--color-pine-blue); /* Dark Pine Blue for active NOTES mode */
+           color: white;
+       }
+       .btn-mode-notes:hover {
+           background-color: #215c5c;
+       }
+
+
+       /* Clear Button (Matches New Game - Berry Crush) */
+       #clear-button {
+           background-color: var(--color-berry-crush) !important;
+           color: white;
+       }
+       #clear-button:hover {
+            background-color: #9b405c !important;
+       }
+
+
+       /* Restart Button (Matches Solve It! - Vintage Berry) */
+       #restart-button {
+           background-color: var(--color-vintage-berry) !important;
+           color: white;
+       }
+       #restart-button:hover {
+           background-color: #643248 !important;
+       }
+
+
+
+
+       /* Status Message (Updated to use Main App Background color) */
+       #status-message {
+           background-color: var(--color-main-bg) !important;
+           color: var(--color-pine-blue) !important;
+           border: 1px solid var(--color-pine-blue);
+       }
+       /* Specific override for success/error clarity */
+       #status-message.bg-green-200 {
+           background-color: #34d399 !important;
+           color: white !important;
+           border-color: #065f46;
+       }
+       #status-message.bg-red-200 {
+           background-color: #fecaca !important;
+           color: #ef4444 !important;
+           border-color: #ef4444;
+       }
+
+
+       /* Utility button layout cleanup */
+       #utility-buttons button {
+            width: 100%;
+       }
+       @media (min-width: 640px) {
+           #utility-buttons button {
+               width: auto;
+           }
+       }
+   </style>
+</head>
+<body class="p-4 flex flex-col items-center min-h-screen h-screen">
+
+
+   <div class="w-full max-w-3xl flex flex-col h-full mx-auto p-2 sm:p-4 space-y-3">
+      
+       <header class="text-center p-4 rounded-xl shadow-lg border border-gray-200" style="background-color: var(--color-main-bg);">
+           <h1 class="text-3xl font-bold text-gray-800">Sudoku Grid</h1>
+           <p id="timer" class="text-xl font-mono text-gray-600 mt-2">00:00</p>
+       </header>
+
+
+       <div class="flex flex-col sm:flex-row justify-center items-center gap-4 p-4 rounded-xl shadow-lg border border-gray-200" style="background-color: var(--color-main-bg);">
+           <select id="difficulty-select" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-red-600 focus:border-red-600">
+               <option value="40">Easy (40 clues)</option>
+               <option value="30">Medium (30 clues)</option>
+               <option value="20">Hard (20 clues)</option>
+           </select>
+           <button id="new-game-button" class="px-6 py-2 text-white rounded-xl font-semibold transition duration-150 shadow-md">
+               New Game
+           </button>
+           <button id="solve-button" class="px-6 py-2 text-white rounded-xl font-semibold transition duration-150 shadow-md">
+               Solve It!
+           </button>
+       </div>
+
+
+       <div id="sudoku-grid-container" class="flex justify-center flex-grow items-center">
+           <div id="sudoku-grid">
+               </div>
+       </div>
+      
+       <div id="number-input-panel" class="p-4 rounded-xl shadow-lg flex flex-col justify-center items-center space-y-4 border border-gray-200" style="background-color: var(--color-main-bg);">
+           </div>
+
+
+       <div id="status-message" class="text-center p-4 rounded-xl shadow-lg transition-all duration-300 min-h-[50px] flex items-center justify-center font-semibold text-lg bg-gray-100 text-gray-700">
+           Game started. Select a cell and enter a number!
+       </div>
+
+
+   </div>
+
+
+   <script>
+       // --- Game State & DOM Elements ---
+       const GRID_SIZE = 9;
+       const BOX_SIZE = 3;
+       let board = Array(GRID_SIZE).fill(0).map(() => Array(GRID_SIZE).fill(0));
+       let solvedBoard = [];
+       let initialClues = [];
+       let selectedCell = { row: -1, col: -1 };
+       let timerInterval;
+       let timeInSeconds = 0;
+      
+       // State for Notes Feature
+       let notesBoard = Array(GRID_SIZE).fill(0).map(() => Array(GRID_SIZE).fill(0).map(() => new Set()));
+       let isNoteMode = false;
+
+
+       const sudokuGrid = document.getElementById('sudoku-grid');
+       const numberInputPanel = document.getElementById('number-input-panel');
+       const newGameButton = document.getElementById('new-game-button');
+       const solveButton = document.getElementById('solve-button');
+       const difficultySelect = document.getElementById('difficulty-select');
+       const statusMessage = document.getElementById('status-message');
+       const timerElement = document.getElementById('timer');
+
+
+       // --- Utility Functions for Solver and Generator (Unchanged) ---
+       function shuffle(array) {
+           for (let i = array.length - 1; i > 0; i--) {
+               const j = Math.floor(Math.random() * (i + 1));
+               [array[i], array[j]] = [array[j], array[i]];
+           }
+       }
+
+
+       function isSafe(grid, row, col, num) {
+           for (let x = 0; x < GRID_SIZE; x++) {
+               if (grid[row][x] === num || grid[x][col] === num) return false;
+           }
+           const startRow = row - row % BOX_SIZE;
+           const startCol = col - col % BOX_SIZE;
+           for (let i = 0; i < BOX_SIZE; i++) {
+               for (let j = 0; j < BOX_SIZE; j++) {
+                   if (grid[i + startRow][j + startCol] === num) return false;
+               }
+           }
+           return true;
+       }
+
+
+       function solveSudoku(grid, solutions = 0) {
+           let row = -1;
+           let col = -1;
+           let isEmpty = true;
+
+
+           for (let i = 0; i < GRID_SIZE; i++) {
+               for (let j = 0; j < GRID_SIZE; j++) {
+                   if (grid[i][j] === 0) {
+                       row = i;
+                       col = j;
+                       isEmpty = false;
+                       break;
+                   }
+               }
+               if (!isEmpty) break;
+           }
+
+
+           if (isEmpty) return solutions + 1;
+
+
+           let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+           shuffle(numbers);
+
+
+           for (let num of numbers) {
+               if (isSafe(grid, row, col, num)) {
+                   grid[row][col] = num;
+                   solutions = solveSudoku(grid, solutions);
+                   grid[row][col] = 0;
+                  
+                   if (solutions > 1) return solutions;
+               }
+           }
+           return solutions;
+       }
+
+
+       function generateSolvedGrid() {
+           const grid = Array(GRID_SIZE).fill(0).map(() => Array(GRID_SIZE).fill(0));
+           function fillGrid(row, col) {
+               if (row === GRID_SIZE) return true;
+
+
+               const nextCol = (col + 1) % GRID_SIZE;
+               const nextRow = col === GRID_SIZE - 1 ? row + 1 : row;
+
+
+               if (grid[row][col] !== 0) return fillGrid(nextRow, nextCol);
+
+
+               let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+               shuffle(numbers);
+
+
+               for (let num of numbers) {
+                   if (isSafe(grid, row, col, num)) {
+                       grid[row][col] = num;
+                       if (fillGrid(nextRow, nextCol)) return true;
+                       grid[row][col] = 0;
+                   }
+               }
+               return false;
+           }
+           fillGrid(0, 0);
+           return grid;
+       }
+
+
+       function generatePuzzle(cluesToKeep) {
+           solvedBoard = generateSolvedGrid();
+           let puzzle = solvedBoard.map(arr => [...arr]);
+           let cells = [];
+           for (let r = 0; r < GRID_SIZE; r++) {
+               for (let c = 0; c < GRID_SIZE; c++) {
+                   cells.push({ r, c });
+               }
+           }
+           shuffle(cells);
+
+
+           const totalCells = GRID_SIZE * GRID_SIZE;
+           const cellsToRemove = totalCells - cluesToKeep;
+           let cellsRemoved = 0;
+
+
+           for (const cell of cells) {
+               if (cellsRemoved >= cellsToRemove) break;
+
+
+               const { r, c } = cell;
+               const tempVal = puzzle[r][c];
+               puzzle[r][c] = 0;
+
+
+               let checkGrid = puzzle.map(arr => [...arr]);
+
+
+               if (solveSudoku(checkGrid) !== 1) {
+                   puzzle[r][c] = tempVal;
+               } else {
+                   cellsRemoved++;
+               }
+           }
+
+
+           initialClues = [];
+           for (let r = 0; r < GRID_SIZE; r++) {
+               for (let c = 0; c < GRID_SIZE; c++) {
+                   if (puzzle[r][c] !== 0) {
+                       initialClues.push(`${r}-${c}`);
+                   }
+               }
+           }
+           return puzzle;
+       }
+       // --- End Utility Functions ---
+
+
+       // Stops and resets the timer
+       function resetTimer() {
+           clearInterval(timerInterval);
+           timeInSeconds = 0;
+           timerElement.textContent = "00:00";
+       }
+
+
+       // Starts the timer
+       function startTimer() {
+           resetTimer();
+           timerInterval = setInterval(() => {
+               timeInSeconds++;
+               const minutes = String(Math.floor(timeInSeconds / 60)).padStart(2, '0');
+               const seconds = String(timeInSeconds % 60).padStart(2, '0');
+               timerElement.textContent = `${minutes}:${seconds}`;
+           }, 1000);
+       }
+
+
+       // Renders the board structure and initial state
+       function renderBoard() {
+           sudokuGrid.innerHTML = '';
+           for (let r = 0; r < GRID_SIZE; r++) {
+               for (let c = 0; c < GRID_SIZE; c++) {
+                   const cell = document.createElement('div');
+                   cell.className = 'cell';
+                   cell.dataset.row = r;
+                   cell.dataset.col = c;
+                   cell.id = `cell-${r}-${c}`;
+
+
+                   const value = board[r][c];
+                  
+                   if (value !== 0) {
+                       cell.textContent = value;
+                       cell.classList.remove('notes-mode');
+                       notesBoard[r][c] = new Set();
+                   } else {
+                       renderNotes(cell, r, c);
+                   }
+
+
+                   if (initialClues.includes(`${r}-${c}`)) {
+                       cell.classList.add('initial');
+                   } else {
+                       cell.classList.add('user-input-cell');
+                       cell.addEventListener('click', handleCellClick);
+                   }
+
+
+                   sudokuGrid.appendChild(cell);
+               }
+           }
+           if (numberInputPanel.children.length === 0) {
+               renderInputPanel();
+           }
+       }
+
+
+       // Renders the small note numbers inside an empty cell
+       function renderNotes(cell, r, c) {
+           cell.textContent = '';
+           const notes = Array.from(notesBoard[r][c]).sort();
+          
+           if (notes.length > 0) {
+               cell.classList.add('notes-mode');
+               const notesContainer = document.createElement('div');
+               notesContainer.className = 'notes-grid';
+
+
+               for (let i = 1; i <= 9; i++) {
+                   const noteElement = document.createElement('span');
+                   noteElement.className = 'note';
+                   if (notes.includes(i)) {
+                       noteElement.textContent = i;
+                   }
+                   notesContainer.appendChild(noteElement);
+               }
+               cell.appendChild(notesContainer);
+           } else {
+               cell.classList.remove('notes-mode');
+           }
+       }
+
+
+       // Cleans up all existing highlights on the board
+       function clearHighlights() {
+           document.querySelectorAll('.cell').forEach(c => {
+               c.classList.remove('selected', 'highlighted', 'same-number-highlight');
+           });
+       }
+      
+       // *** MODIFIED: Only handles highlighting, removed real-time validation ***
+       function updateCellVisuals() {
+           let selectedNumber = (selectedCell.row !== -1 && selectedCell.col !== -1) ? board[selectedCell.row][selectedCell.col] : 0;
+
+
+           document.querySelectorAll('.cell').forEach(cell => {
+               // Remove visual validation cues (error, success) to prevent premature coloring
+               cell.classList.remove('error', 'success', 'same-number-highlight');
+              
+               const r = parseInt(cell.dataset.row);
+               const c = parseInt(cell.dataset.col);
+               const val = board[r][c];
+
+
+               // Re-apply same-number highlight if needed
+               if (val !== 0 && selectedNumber !== 0 && val === selectedNumber) {
+                   cell.classList.add('same-number-highlight');
+               }
+           });
+           // NOTE: Win check is now only done in solvePuzzle()
+       }
+      
+       // Handles cell selection and highlighting
+       function handleCellClick(event) {
+           const cell = event.target.closest('.cell');
+           if (!cell || cell.classList.contains('initial')) return;
+
+
+           const r = parseInt(cell.dataset.row);
+           const c = parseInt(cell.dataset.col);
+          
+           // Clear all highlights from previous selection
+           clearHighlights();
+
+
+           // Select new cell
+           selectedCell = { row: r, col: c };
+           cell.classList.add('selected');
+
+
+           // Highlight related cells (row, col, box)
+           for (let i = 0; i < GRID_SIZE; i++) {
+               document.getElementById(`cell-${r}-${i}`).classList.add('highlighted');
+               document.getElementById(`cell-${i}-${c}`).classList.add('highlighted');
+           }
+
+
+           // Highlight 3x3 box
+           const startRow = r - r % BOX_SIZE;
+           const startCol = c - c % BOX_SIZE;
+           for (let i = 0; i < BOX_SIZE; i++) {
+               for (let j = 0; j < BOX_SIZE; j++) {
+                   document.getElementById(`cell-${startRow + i}-${startCol + j}`).classList.add('highlighted');
+               }
+           }
+          
+           // Ensure selected cell remains active and update same number highlight
+           cell.classList.add('selected');
+           updateCellVisuals(); // Only updates highlights, no error checking
+       }
+
+
+       // Handles user input (from keyboard or virtual panel)
+       function handleInput(number) {
+           if (selectedCell.row === -1 || selectedCell.col === -1) {
+               showMessage("Please select an empty cell first.", 'bg-yellow-100 text-yellow-700');
+               return;
+           }
+
+
+           const r = selectedCell.row;
+           const c = selectedCell.col;
+           const cellId = `${r}-${c}`;
+
+
+           if (initialClues.includes(cellId)) {
+               showMessage("You cannot change an original clue!", 'bg-red-100 text-red-700');
+               return;
+           }
+          
+           // --- Note Mode Logic ---
+           if (isNoteMode) {
+               if (board[r][c] !== 0) {
+                   showMessage("Cannot add notes to a cell with a final number.", 'bg-red-100 text-red-700');
+                   return;
+               }
+              
+               const notes = notesBoard[r][c];
+               if (number === 0) {
+                   notes.clear();
+                   showMessage("Notes cleared.", 'bg-gray-100 text-gray-700');
+               } else if (notes.has(number)) {
+                   notes.delete(number);
+                   showMessage(`Note ${number} removed.`, 'bg-gray-100 text-gray-700');
+               } else {
+                   notes.add(number);
+                   showMessage(`Note ${number} added.`, 'bg-gray-100 text-gray-700');
+               }
+              
+               renderBoard();
+               const cellElement = document.getElementById(`cell-${r}-${c}`);
+               if (cellElement) cellElement.click();
+               return;
+           }
+
+
+           // --- Final Placement Mode Logic ---
+          
+           const cellElement = document.getElementById(`cell-${r}-${c}`);
+
+
+           board[r][c] = number;
+           cellElement.textContent = number === 0 ? '' : number;
+
+
+           if (number !== 0) {
+               notesBoard[r][c].clear();
+           }
+
+
+           renderBoard();
+           if (cellElement) cellElement.click();
+          
+           updateCellVisuals(); // Only updates highlights, no error checking
+          
+           // Send neutral message, no correctness feedback
+           if (number === 0) {
+                showMessage("Number cleared. Select the next cell.", 'bg-gray-100 text-gray-700');
+           } else {
+                showMessage("Number placed. Keep going!", 'bg-green-100 text-green-700');
+           }
+       }
+
+
+       // Generates the virtual input panel (1-9, Clear, and Mode Toggle)
+       function renderInputPanel() {
+           numberInputPanel.innerHTML = '';
+          
+           // --- Row 1: Number Buttons 1-9 ---
+           const numberButtonsDiv = document.createElement('div');
+           numberButtonsDiv.id = 'number-buttons';
+           numberButtonsDiv.className = 'flex flex-wrap justify-center space-x-2 w-full';
+          
+           for (let i = 1; i <= 9; i++) {
+               const btn = document.createElement('button');
+               btn.textContent = i;
+               // Use custom Light Cerulean color via CSS class
+               btn.className = 'w-10 h-10 rounded-lg text-lg font-bold shadow-sm';
+               btn.style.backgroundColor = 'var(--color-light-cerulean)';
+               btn.style.color = 'var(--color-pine-blue)';
+               btn.onmouseover = () => btn.style.backgroundColor = '#c9c5e3';
+               btn.onmouseout = () => btn.style.backgroundColor = 'var(--color-light-cerulean)';
+               btn.onclick = () => handleInput(i);
+               numberButtonsDiv.appendChild(btn);
+           }
+           numberInputPanel.appendChild(numberButtonsDiv);
+          
+           // --- Row 2: Utility Buttons (Mode, Clear, Restart) ---
+           const utilityButtonsDiv = document.createElement('div');
+           utilityButtonsDiv.id = 'utility-buttons';
+           utilityButtonsDiv.className = 'flex flex-wrap justify-center sm:justify-center items-center gap-2 pt-4 mt-2 border-t border-gray-200 w-full';
+          
+           // 1. Mode Toggle Button
+           const modeBtn = document.createElement('button');
+           modeBtn.id = 'mode-toggle-button';
+           modeBtn.textContent = 'Mode: FINAL';
+           // Use custom Pine Blue derivatives
+           modeBtn.className = 'px-4 py-2 btn-mode-final rounded-xl font-semibold transition duration-150 shadow-sm sm:w-auto w-full';
+           modeBtn.onclick = toggleNoteMode;
+           utilityButtonsDiv.appendChild(modeBtn);
+
+
+           // 2. Clear Button
+           const clearBtn = document.createElement('button');
+           clearBtn.id = 'clear-button';
+           clearBtn.textContent = 'Clear';
+           // Class for Berry Crush background is defined in CSS #clear-button
+           clearBtn.className = 'px-4 py-2 text-white rounded-xl text-sm font-bold shadow-sm sm:w-auto w-full';
+           clearBtn.onclick = () => handleInput(0); // 0 clears the current input/notes
+           utilityButtonsDiv.appendChild(clearBtn);
+
+
+           // 3. Restart Button
+           const restartBtn = document.createElement('button');
+           restartBtn.id = 'restart-button';
+           restartBtn.textContent = 'Restart';
+           // FIX APPLIED HERE: Restored the correct classes for the restart button.
+           restartBtn.className = 'px-4 py-2 text-white rounded-xl text-sm font-bold shadow-sm sm:w-auto w-full';
+           restartBtn.onclick = newGame; // Calls the newGame function
+           utilityButtonsDiv.appendChild(restartBtn);
+          
+           numberInputPanel.appendChild(utilityButtonsDiv);
+       }
+
+
+       // Toggles between Final Placement mode and Note-Taking mode
+       function toggleNoteMode() {
+           isNoteMode = !isNoteMode;
+           const modeToggleButton = document.getElementById('mode-toggle-button');
+
+
+           if (isNoteMode) {
+               modeToggleButton.textContent = 'Mode: NOTES';
+               modeToggleButton.classList.remove('btn-mode-final');
+               modeToggleButton.classList.add('btn-mode-notes');
+               showMessage("Note-taking mode enabled. Tap numbers to add/remove pencil marks.", 'bg-green-100 text-green-700');
+           } else {
+               modeToggleButton.textContent = 'Mode: FINAL';
+               modeToggleButton.classList.remove('btn-mode-notes');
+               modeToggleButton.classList.add('btn-mode-final');
+               showMessage("Final placement mode enabled. Tap a number to place a definitive answer.", 'bg-blue-100 text-blue-700');
+           }
+       }
+
+
+       // Handles the win condition (Called ONLY after solvePuzzle finishes validation)
+       function handleWin() {
+           clearInterval(timerInterval);
+           showMessage(`Congratulations! You solved the puzzle in ${timerElement.textContent}!`, 'bg-green-200 text-green-800');
+          
+           document.querySelectorAll('.cell').forEach(cell => {
+               cell.classList.add('success');
+               cell.classList.remove('selected', 'highlighted', 'error', 'same-number-highlight');
+               cell.removeEventListener('click', handleCellClick);
+           });
+           solveButton.disabled = true;
+       }
+      
+       // Displays a status message in the dedicated box
+       function showMessage(text, classes) {
+           statusMessage.className = `text-center p-4 rounded-xl shadow-lg transition-all duration-300 min-h-[50px] flex items-center justify-center font-semibold text-lg ${classes}`;
+           statusMessage.textContent = text;
+       }
+
+
+       // Event listener for keyboard input
+       document.addEventListener('keydown', (e) => {
+           const num = parseInt(e.key);
+          
+           if (selectedCell.row !== -1 && selectedCell.col !== -1) {
+               if (num >= 1 && num <= 9) {
+                   handleInput(num);
+               } else if (e.key === 'Delete' || e.key === 'Backspace' || e.key === '0') {
+                   handleInput(0);
+               }
+              
+               // Handle arrow key movement
+               let newRow = selectedCell.row;
+               let newCol = selectedCell.col;
+
+
+               if (e.key === 'ArrowUp') newRow = Math.max(0, newRow - 1);
+               else if (e.key === 'ArrowDown') newRow = Math.min(GRID_SIZE - 1, newRow + 1);
+               else if (e.key === 'ArrowLeft') newCol = Math.max(0, newCol - 1);
+               else if (e.key === 'ArrowRight') newCol = Math.min(GRID_SIZE - 1, newCol + 1);
+              
+               if (newRow !== selectedCell.row || newCol !== selectedCell.col) {
+                   e.preventDefault();
+                   const newCellElement = document.getElementById(`cell-${newRow}-${newCol}`);
+                   if (newCellElement) newCellElement.click();
+               }
+           }
+       });
+
+
+       // --- Main Game Initialization ---
+
+
+       // Function to start a new game
+       function newGame() {
+           const cluesToKeep = parseInt(difficultySelect.value);
+           // Use neutral status message color for generating new puzzle
+           showMessage(`Generating a new ${difficultySelect.options[difficultySelect.selectedIndex].text} puzzle...`, 'bg-gray-100 text-gray-700');
+          
+           newGameButton.disabled = true;
+           solveButton.disabled = true;
+          
+           notesBoard = Array(GRID_SIZE).fill(0).map(() => Array(GRID_SIZE).fill(0).map(() => new Set()));
+          
+           // Reset selection and mode display
+           selectedCell = { row: -1, col: -1 };
+           clearHighlights();
+           isNoteMode = false;
+
+
+           // Small delay to allow message to show before heavy computation
+           setTimeout(() => {
+               try {
+                   board = generatePuzzle(cluesToKeep);
+                   renderBoard();
+                   updateCellVisuals();
+                   startTimer();
+                  
+                   // Use neutral status message color for game started
+                   showMessage("Game started. Select a cell and enter a number!", 'bg-gray-100 text-gray-700');
+                  
+               } catch (e) {
+                   console.error("Puzzle Generation Error:", e);
+                   showMessage("Error generating puzzle. Try again.", 'bg-red-200 text-red-800');
+               } finally {
+                   newGameButton.disabled = false;
+                   solveButton.disabled = false;
+                   // Ensure the mode button is reset visually after game start
+                   const modeButton = document.getElementById('mode-toggle-button');
+                   if (modeButton) {
+                       modeButton.textContent = 'Mode: FINAL';
+                       // Use the custom class
+                       modeButton.classList.remove('btn-mode-notes');
+                       modeButton.classList.add('btn-mode-final');
+                   }
+               }
+           }, 50);
+       }
+
+
+       // Function to instantly solve the puzzle (Performs the delayed validation and error clearing)
+       function solvePuzzle() {
+           if (solvedBoard.length === 0) {
+                showMessage("Generate a puzzle first!", 'bg-yellow-100 text-yellow-700');
+                return;
+           }
+          
+           // Check for empty cells before validating
+           const isFull = board.every(row => row.every(cell => cell !== 0));
+          
+           // 1. Perform validation and identify errors
+           let errorFound = false;
+           let cellsToClear = [];
+
+
+           document.querySelectorAll('.cell').forEach(cell => {
+               const r = parseInt(cell.dataset.row);
+               const c = parseInt(cell.dataset.col);
+               const val = board[r][c];
+              
+               // Clear all existing highlights/validation colors
+               cell.classList.remove('selected', 'highlighted', 'same-number-highlight', 'error', 'success');
+
+
+               if (val !== 0) {
+                   if (val !== solvedBoard[r][c]) {
+                       // Incorrect answer found
+                       cell.classList.add('error'); // Briefly show the error
+                       cellsToClear.push({ r, c });
+                       errorFound = true;
+                   } else {
+                       // Correct answer found
+                       cell.classList.add('success');
+                   }
+               }
+           });
+
+
+           clearInterval(timerInterval);
+
+
+           // 2. Handle feedback based on results
+           if (errorFound) {
+               // Remove the incorrect numbers from the board after a short delay
+               setTimeout(() => {
+                   cellsToClear.forEach(({ r, c }) => {
+                       board[r][c] = 0; // Clear data
+                   });
+                  
+                   // Rerender the board to clear the incorrect numbers and error coloring
+                   renderBoard();
+                  
+                   // Re-enable input for the user
+                   newGameButton.disabled = false;
+                   solveButton.disabled = false;
+                  
+                   showMessage(`Incorrect numbers cleared. ${cellsToClear.length} errors found. Keep trying!`, 'bg-red-200 text-red-800');
+               }, 500); // 500ms delay to let the user see the red errors briefly
+
+
+           } else if (isFull) {
+               // If full and no errors: WIN
+               // Board already has success colors applied from the loop above
+               board = solvedBoard.map(arr => [...arr]);
+               document.querySelectorAll('.cell').forEach((cell) => {
+                   cell.textContent = solvedBoard[cell.dataset.row][cell.dataset.col];
+               });
+               handleWin();
+           } else {
+               // Not full, no new errors found, but warning was already given
+               showMessage("The board is not yet complete! Fill all cells before solving.", 'bg-yellow-100 text-yellow-700');
+               // Re-enable buttons immediately if incomplete
+               newGameButton.disabled = false;
+               solveButton.disabled = false;
+           }
+       }
+
+
+
+
+       // --- Event Listeners and Initial Setup ---
+      
+       newGameButton.addEventListener('click', newGame);
+       solveButton.addEventListener('click', solvePuzzle);
+      
+       // Initial call to set up the board structure and start the game automatically
+       document.addEventListener('DOMContentLoaded', () => {
+           difficultySelect.value = "30";
+           renderBoard();
+           newGame();    
+       });
+      
+   </script>
+</body>
+</html>
+
