@@ -103,7 +103,7 @@ hr{
   bottom:40px;
   padding: 10px;
   font-family: 'Times New Roman', Times, serif;
-  min-height: 2700px;
+  min-height: 3000px;
 
 
 
@@ -122,7 +122,7 @@ hr{
    bottom: 40px;
    padding: 10px;
    position: absolute;
-   min-height: 2700px;
+   min-height: 3000px;
    background-color: #60AB9A;
    h3{
        margin-top: 0;
@@ -154,5 +154,6 @@ hr{
 
   }
  
+
 
 
